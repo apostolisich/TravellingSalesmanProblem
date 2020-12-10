@@ -5,10 +5,12 @@ import java.util.List;
 
 public class Vertex {
 
+	private int id;
 	//Μια λίστα που περιέχει όλες τις ακμές του κόμβου
     private List<Edge> edgeList;
     
-    public Vertex() {
+    public Vertex(int id) {
+    	this.id = id;
     	edgeList = new ArrayList<Edge>();
     }
 
@@ -28,6 +30,13 @@ public class Vertex {
 	 */
 	public void addEdge(Edge edge) {
 		edgeList.add(edge);
+	}
+	
+	/**
+	 * Επιστρέφει το id του συγκερκιμένου κόμβου
+	 */
+	public int getId() {
+		return id;
 	}
 
 }

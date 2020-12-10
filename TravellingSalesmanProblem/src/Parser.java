@@ -96,7 +96,7 @@ public class Parser {
 	 */
 	private static void fillGraphWithVertexes(Graph graph, BufferedReader fileReader, int totalVertexCount) throws IOException {
 		for(int vertexIndex = 0; vertexIndex < totalVertexCount; vertexIndex++) {
-			Vertex vertex = new Vertex();
+			Vertex vertex = new Vertex(vertexIndex);
 			addEdgesToVertex(vertex, fileReader, totalVertexCount);
 			graph.addVertex(vertex);
 			skipLines(fileReader, 2);

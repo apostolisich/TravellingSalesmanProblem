@@ -1,6 +1,12 @@
+import java.util.List;
+
 import xml.representation.classes.Graph;
+import xml.representation.classes.Vertex;
 
 public class Main {
+	
+	//Ένας αριθμός από το 0 μέχρι το 11 που αντιστοιχεί στον πίνακα με τα προβλήματα
+	private static final int PROBLEM_TO_BE_USED = 9;
 	
 	/*
 	 * Ένας πίνακας από μερικά benchmark problems της TSPLIB. Τον δημιούργησα για την εύκολη επιλογή μεταξύ διαφόρων
@@ -38,16 +44,17 @@ public class Main {
 	};
 
 	public static void main(String[] args) {
-		//Ένας αριθμός από το 0 μέχρι το 11 που αντιστοιχεί στον πίνακα με τα προβλήματα
-		int problemToBeUsed = 1;
-		
 		Graph graph = new Graph();
-		Parser.fillTspGraphFromFile(graph, BENCHMARK_PROBLEMS_FILE_ARRAY[problemToBeUsed]);
+		Parser.fillTspGraphFromFile(graph, BENCHMARK_PROBLEMS_FILE_ARRAY[PROBLEM_TO_BE_USED]);
 		
 		System.out.println("Graph");
 		System.out.println("---------");
 		System.out.print(graph.toString());
-		System.out.print("Optimal Solution: " + BENCHMARK_PROBLEMS_BEST_KNOWN_SOLUTIONS[problemToBeUsed]);
+		
+		List<Vertex> initialSolution = Solver.nearestNeighborHeuristic(graph);
+		int initialSolutionCost = Solver.calculateTotalCost(initialSolution);
+		System.out.println("Initial Solution: " + initialSolutionCost);
+		System.out.print("Optimal Solution: " + BENCHMARK_PROBLEMS_BEST_KNOWN_SOLUTIONS[PROBLEM_TO_BE_USED]);
 	}
 
 }
