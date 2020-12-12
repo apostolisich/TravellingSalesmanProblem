@@ -4,12 +4,10 @@ public class Edge implements Comparable<Edge>{
 
 	private int id;
     private int cost;
-    private boolean isVisited;
     
     public Edge(int id, int cost) {
 		this.id = id;
 		this.cost = cost;
-		isVisited = false;
 	}
 
     /**
@@ -29,25 +27,6 @@ public class Edge implements Comparable<Edge>{
     public int getCost() {
         return cost;
     }
-    
-    /**
-     * Returns true if the edge is used and false otherwise.
-     * 
-     * @return true if edge is used; false otherwise
-     */
-	public boolean isVisited() {
-		return isVisited;
-	}
-
-	/**
-	 * Ορίζει αν τον κόμβο στον οποίο οδηγεί αυτή η ακμή τον έχουμε
-	 * επισκευθεί.
-	 * 
-	 * @param isVisited
-	 */
-	public void setVisited(boolean isVisited) {
-		this.isVisited = isVisited;
-	}
 
 	@Override
 	public int compareTo(Edge otherEdge) {
