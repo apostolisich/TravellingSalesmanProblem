@@ -76,6 +76,12 @@ public class Parser {
 	 */
 	private static int getTotalVertexCount(BufferedReader fileReader) throws IOException {
 		int totalVertexCount = 0;
+		
+		/*
+		 * Τα ονόματα των αρχείων είναι της μορφής <όνομα><μέγεθος>.xml, οπότε χρησιμοποιώ το
+		 * συγκεκριμένο regular expression ώστε να εντοπίσω τον αριθμό μέσα στο όνομα του
+		 * αρχείου και να το εξάγω.
+		 */
 		Matcher nameMatcher = NAME_PATTERN.matcher(fileReader.readLine());
 		nameMatcher.find();
 		totalVertexCount = Integer.parseInt(nameMatcher.group());
