@@ -123,6 +123,15 @@ public class TabuSearch {
 		}
 	}
 
+	/**
+	 * Υπολογίζει και επιστρέφει το κόστος της τρέχουσας αλλαγής.
+	 * 
+	 * @param vertexOnePosition η θέση του πρώτου κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
+	 * @param vertexTwoPosition η θέση του δεύτερο κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
+	 * @param solution η λίστα των κόμβων της τρέχουσας λύσης 
+	 * @param solutionCost το κόστης της τρέχουσας λύσης
+	 * @return το νέο κόστος της λύσης με την τρέχουσα ανταλλαγή
+	 */
 	private int getCurrentSwapCost(int vertexOnePosition, int vertexTwoPosition, List<Vertex> solution, int solutionCost) {
 		Vertex vertexOne = solution.get(vertexOnePosition);
 		Vertex vertexOnePrevious = vertexOnePosition == 0 ? null : solution.get(vertexOnePosition - 1);
@@ -130,27 +139,71 @@ public class TabuSearch {
 		
 		Vertex vertexTwo = solution.get(vertexTwoPosition);
 		Vertex vertexTwoPrevious = solution.get(vertexTwoPosition - 1);
-		Vertex nodeTwoNext = vertexTwoPosition == graphSize - 2 ? null : solution.get(vertexTwoPosition + 1);
+		Vertex vertexTwoNext = vertexTwoPosition == graphSize - 2 ? null : solution.get(vertexTwoPosition + 1);
 		
+		int vertexesInitialCostContribution = calculateVertexesInitialCostContribution(vertexOnePrevious, vertexOne, vertexOneNext,
+																					   vertexTwoPrevious, vertexTwo, vertexTwoNext);
+		
+		int vertexexNewCostContribution = calculateVertexesNewCostContribution(vertexOnePrevious, vertexOne, vertexOneNext,
+																			   vertexTwoPrevious, vertexTwo, vertexTwoNext,
+																			   vertexOnePosition, vertexTwoPosition);
+		
+		return solutionCost - vertexesInitialCostContribution + vertexexNewCostContribution;
+	}
+	
+	/**
+	 * Υπολογίζει και επιστρέφει τη συνολική συνεισφορά των κόμβων στο κόστος της αρχικής λύσης 
+	 * πριν την ανταλλαγή.
+	 * 
+	 * @param vertexOnePrevious ο προηγούμενος κατά σειρά κόμβος του κόμβου ένα
+	 * @param vertexOne ο κόμβος ένα
+	 * @param vertexOneNext ο επόμενος κατά σειρά κόμβος του κόμβου ένα
+	 * @param vertexTwoPrevious ο προηγούμενος κατά σειρά κόμβος του κόμβου δύο
+	 * @param vertexTwo ο κόμβος δύο
+	 * @param vertexTwoNext ο επόμενος κατά σειρά κόμβος του κόμβου δύο
+	 * @return τη συνεισφορά των κόμβων δύο κόμβων πριν την ανταλλαγή
+	 */
+	private int calculateVertexesInitialCostContribution(Vertex vertexOnePrevious, Vertex vertexOne, Vertex vertexOneNext,
+														 Vertex vertexTwoPrevious, Vertex vertexTwo, Vertex vertexTwoNext) {
 		int vertexOnePrevCost = vertexOnePrevious == null ? 0 : getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne.getId());
 		int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
 		int vertexTwoPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexTwo.getId());
-		int vertexTwoNextCost = nodeTwoNext == null ? 0 : getEdgeCostFromVertexToVertex(vertexTwo, nodeTwoNext.getId());
-		int vertexesInitialCostContribution = vertexOnePrevCost + vertexOneNextCost + vertexTwoPrevCost + vertexTwoNextCost;
+		int vertexTwoNextCost = vertexTwoNext == null ? 0 : getEdgeCostFromVertexToVertex(vertexTwo, vertexTwoNext.getId());
 		
+		return vertexOnePrevCost + vertexOneNextCost + vertexTwoPrevCost + vertexTwoNextCost;
+	}
+	
+	/**
+	 * Υπολογίζει και επιστρέφει τη συνολική συνεισφορά των κόμβων στο κόστος της αρχικής λύσης 
+	 * μετά την ανταλλαγή.
+	 * 
+	 * @param vertexOnePrevious ο προηγούμενος κατά σειρά κόμβος του κόμβου ένα
+	 * @param vertexOne ο κόμβος ένα
+	 * @param vertexOneNext ο επόμενος κατά σειρά κόμβος του κόμβου ένα
+	 * @param vertexTwoPrevious ο προηγούμενος κατά σειρά κόμβος του κόμβου δύο
+	 * @param vertexTwo ο κόμβος δύο
+	 * @param vertexTwoNext ο επόμενος κατά σειρά κόμβος του κόμβου δύο
+	 * @param vertexOnePosition η θέση του πρώτου κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
+	 * @param vertexTwoPosition η θέση του δεύτερο κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
+	 * @return τη συνεισφορά των κόμβων δύο κόμβων μετά την ανταλλαγή
+	 */
+	private int calculateVertexesNewCostContribution(Vertex vertexOnePrevious, Vertex vertexOne, Vertex vertexOneNext,
+			 										 Vertex vertexTwoPrevious, Vertex vertexTwo, Vertex vertexTwoNext,
+			 										 int vertexOnePosition, int vertexTwoPosition) {
 		int vertexOneSwapPrevCost = vertexOnePrevious == null ? 0: getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexTwo.getId());
-		int vertexOneSwapNextCost, vertexTwoSwapPrevCost = 0;
+		int vertexOneSwapNextCost = 0;
+		int vertexTwoSwapPrevCost = 0;
 		if(vertexTwoPosition - vertexOnePosition == 1) {
+			int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
 			vertexOneSwapNextCost = vertexOneNextCost;
 			vertexTwoSwapPrevCost = vertexOneNextCost;
 		} else {
 			vertexOneSwapNextCost = getEdgeCostFromVertexToVertex(vertexTwo, vertexOneNext.getId());
 			vertexTwoSwapPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexOne.getId());
 		}
-		int vertexTwoSwapNextCost = nodeTwoNext == null ? 0: getEdgeCostFromVertexToVertex(vertexOne, nodeTwoNext.getId());
-		int vertexesNewCostContribution = vertexOneSwapPrevCost + vertexOneSwapNextCost + vertexTwoSwapPrevCost + vertexTwoSwapNextCost;
+		int vertexTwoSwapNextCost = vertexTwoNext == null ? 0: getEdgeCostFromVertexToVertex(vertexOne, vertexTwoNext.getId());
 		
-		return solutionCost - vertexesInitialCostContribution + vertexesNewCostContribution;
+		return vertexOneSwapPrevCost + vertexOneSwapNextCost + vertexTwoSwapPrevCost + vertexTwoSwapNextCost;
 	}
 	
 	/**
