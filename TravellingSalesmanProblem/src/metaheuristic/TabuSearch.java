@@ -18,6 +18,8 @@ public class TabuSearch {
 	
 	public TabuSearch(List<Vertex> initialSolution, int graphSize) {
 		this.graphSize = graphSize;
+		/* Εδώ αφαιρώ τον τελευταίο κόμβο ο οποίος είναι ίδιος με τον πρώτο και είχε προστεθεί για
+		 * τον υπολογισμό του κόστους και εκτύπωσητης λύσης */
 		initialSolution.remove(graphSize - 1);
 		this.bestSolution = initialSolution;
 		this.bestSolutionCost = Solver.calculateTotalCost(initialSolution);
@@ -29,7 +31,7 @@ public class TabuSearch {
 	private void initialiseNeededParameters() {
 		currentSolution = bestSolution;
 		currentSolutionCost = bestSolutionCost;
-		iterationCount = graphSize * 3;
+		iterationCount = graphSize * 5;
 		tabuList = new TabuList(graphSize);
 	}
 	
