@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import xml.representation.classes.Graph;
 import xml.representation.classes.Vertex;
 
 public class TabuSearch {
