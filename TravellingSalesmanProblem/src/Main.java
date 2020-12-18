@@ -54,7 +54,7 @@ public class Main {
 		calculateAndPrintSolutionInfo(initialSolution, "Initial solution");
 		initialSolution.remove(graph.size() - 1);
 		
-		List<Vertex> improvedSolution = Solver.applyTabuSearch(graph, initialSolution, Solver.calculateTotalCost(initialSolution));
+		List<Vertex> improvedSolution = Solver.applyTabuSearch(graph.size(), initialSolution, Solver.calculateTotalCost(initialSolution));
 		calculateAndPrintSolutionInfo(improvedSolution, "Improved solution");
 		
 		System.out.println("Optimal Solution: " + BENCHMARK_PROBLEMS_BEST_KNOWN_SOLUTIONS[PROBLEM_TO_BE_USED]);

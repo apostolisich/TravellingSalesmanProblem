@@ -3,13 +3,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import xml.representation.classes.Edge;
 import xml.representation.classes.Graph;
 import xml.representation.classes.Vertex;
 
 public class TabuSearch {
 	
-	private Graph graph;
 	private List<Vertex> bestSolution;
 	private int bestSolutionCost;
 	private List<Vertex> currentSolution;
@@ -18,8 +16,8 @@ public class TabuSearch {
 	private int iterationCount;
 	private TabuList tabuList;
 	
-	public TabuSearch(Graph graph, List<Vertex> initialSolution, int initialSolutionCost) {
-		this.graph = graph;
+	public TabuSearch(int graphSize, List<Vertex> initialSolution, int initialSolutionCost) {
+		this.graphSize = graphSize;
 		this.bestSolution = initialSolution;
 		this.bestSolutionCost = initialSolutionCost;
 	}
@@ -30,7 +28,6 @@ public class TabuSearch {
 	private void initialiseNeededParameters() {
 		currentSolution = bestSolution;
 		currentSolutionCost = bestSolutionCost;
-		graphSize = graph.size();
 		iterationCount = graphSize * 3;
 		tabuList = new TabuList(graphSize);
 	}
@@ -43,75 +40,118 @@ public class TabuSearch {
 	public List<Vertex> execute() {
 		initialiseNeededParameters();
 		
+		/*
+		 * Ως κριτήριο τερματισμού έχουμε είτε το iterationCount είτε την περίπτωση να μη βρούμε
+		 * καλύτερη λύση 3 συνεχόμενες φορές.
+		 */
 		int consecutiveWorseSolutionsCount = 0;
 		while(iterationCount > 0) {
-			List<Swap> currentSwapNeighborhoud = new ArrayList<Swap>();
+			List<Swap> currentSwapsList = getCurrentSwapsList();
 			
-			for(int i = 0; i < graphSize - 2; i++) {
-				for(int j = i + 1; j < graphSize - 1; j++) {
-					int currentSwapCost = getCurrentSwapCost(i, j, currentSolution, currentSolutionCost);
-					Swap currentSwap = new Swap(i, j, currentSwapCost);
-					currentSwapNeighborhoud.add(currentSwap);
-				}
-			}
-			Collections.sort(currentSwapNeighborhoud);
+			performSwapsOnCurrentSolution(currentSwapsList);
 			
-			for(Swap swap: currentSwapNeighborhoud) {
-				//Εδώ πιάνει είτε το καλύτερο, είτε το καλύτερο ενώ είναι tabu λόγω aspiration criteria.
-				//Στο || έχουμε ότι η κίνηση δεν περιλαμβάνεται στο tabu list, δηλαδη tabuList[i][j] == 0
-				if((swap.getCost() < currentSolutionCost) || (tabuList.getTabuValueForPair(swap.getNodeOnePosition(), swap.getNodeTwoPosition()) == 0)) {
-					currentSolutionCost = swap.getCost();
-					doSwap(swap);
-					break;
-				}
-			}
-			
-			if(currentSolutionCost < bestSolutionCost) {
-				bestSolution = currentSolution;
-				bestSolutionCost = currentSolutionCost;
-				consecutiveWorseSolutionsCount = 0;
-			} else {
-				if(consecutiveWorseSolutionsCount == 3)
-					break;
-				
-				consecutiveWorseSolutionsCount++;
-			}
+			updateConsecutiveWorseSolutionsCount(consecutiveWorseSolutionsCount);
+			if(consecutiveWorseSolutionsCount == 3)
+				break;
 			
 			iterationCount--;
 		}
 		
+		//Εδώ προσθέτω ξανά στο τέλος της λύσης τον αρχικό κόμβο για να επιστρέψουμε σε αυτόν.
 		bestSolution.add(bestSolution.get(0));
+		
 		return bestSolution;
 	}
 
-	private int getCurrentSwapCost(int nodeOnePosition, int nodeTwoPosition, List<Vertex> solution, int solutionCost) {
-		Vertex nodeOne = solution.get(nodeOnePosition);
-		Vertex nodeOnePrevious = nodeOnePosition == 0 ? null : solution.get(nodeOnePosition - 1);
-		Vertex nodeOneNext = solution.get(nodeOnePosition + 1);
+	/**
+	 * Επιστρέφει μια λίστα με όλα τα πιθανά swap που μπορούν να γίνουν στην τρέχουσα επανάληψη τα
+	 * οποία και ταξινομεί ως προς το κόστος σε αύξουσα σειρά.
+	 * 
+	 * @return τη λίστα με όλα τα πιθανά swap
+	 */
+	private List<Swap> getCurrentSwapsList() {
+		List<Swap> currentSwapNeighborhoud = new ArrayList<Swap>();
 		
-		Vertex nodeTwo = solution.get(nodeTwoPosition);
-		Vertex nodeTwoPrevious = solution.get(nodeTwoPosition - 1);
-		Vertex nodeTwoNext = nodeTwoPosition == graphSize - 2 ? null : solution.get(nodeTwoPosition + 1);
-		
-		int nodeOnePrevCost = nodeOnePrevious == null ? 0 : getEdgeCostFromNodeToNode(nodeOnePrevious, nodeOne.getId());
-		int nodeOneNextCost = getEdgeCostFromNodeToNode(nodeOne, nodeOneNext.getId());
-		int nodeTwoPrevCost = getEdgeCostFromNodeToNode(nodeTwoPrevious, nodeTwo.getId());
-		int nodeTwoNextCost = nodeTwoNext == null ? 0 : getEdgeCostFromNodeToNode(nodeTwo, nodeTwoNext.getId());
-		int nodesInitialCostContribution = nodeOnePrevCost + nodeOneNextCost + nodeTwoPrevCost + nodeTwoNextCost;
-		
-		int nodeOneSwapPrevCost = nodeOnePrevious == null ? 0: getEdgeCostFromNodeToNode(nodeOnePrevious, nodeTwo.getId());
-		int nodeOneSwapNextCost, nodeTwoSwapPrevCost = 0;
-		if(nodeTwoPosition - nodeOnePosition == 1) {
-			nodeOneSwapNextCost = nodeOneNextCost;
-			nodeTwoSwapPrevCost = nodeOneNextCost;
-		} else {
-			nodeOneSwapNextCost = getEdgeCostFromNodeToNode(nodeTwo, nodeOneNext.getId());
-			nodeTwoSwapPrevCost = getEdgeCostFromNodeToNode(nodeTwoPrevious, nodeOne.getId());
+		for(int i = 0; i < graphSize - 2; i++) {
+			for(int j = i + 1; j < graphSize - 1; j++) {
+				int currentSwapCost = getCurrentSwapCost(i, j, currentSolution, currentSolutionCost);
+				Swap currentSwap = new Swap(i, j, currentSwapCost);
+				currentSwapNeighborhoud.add(currentSwap);
+			}
 		}
-		int nodeTwoSwapNextCost = nodeTwoNext == null ? 0: getEdgeCostFromNodeToNode(nodeOne, nodeTwoNext.getId());
-		int nodesNewCostContribution = nodeOneSwapPrevCost + nodeOneSwapNextCost + nodeTwoSwapPrevCost + nodeTwoSwapNextCost;
+		Collections.sort(currentSwapNeighborhoud);
 		
-		return solutionCost - nodesInitialCostContribution + nodesNewCostContribution;
+		return currentSwapNeighborhoud;
+	}
+	
+	/**
+	 * Ελέγχει όλα τα swap της δοσμένης λίστας και επιλέγει ποια θα εφαρμόσει ανάλογα με το αν παράγουν
+	 * καλύτερη λύση (ή καλύτερη λύση με εφαρμογή του aspiration criteria) ή αν αυξάνουν τη λύση και δεν
+	 * περιλαμβάνονται στο tabu list προκειμένου να απεγκλωβιστούμε από τοπικό βέλτιστο. 
+	 * 
+	 * @param currentSwapsList η λίστα με όλα τα πιθανά swap στην τρέχουσα επανάληψη
+	 */
+	private void performSwapsOnCurrentSolution(List<Swap> currentSwapsList) {
+		//Η λίστα με τα swap είναι ταξινομημένη σε αύξουσα σειρά οπότε πάντα ξεκινάμε τον έλεγχο από τα καλύτερα swap.
+		for(Swap swap: currentSwapsList) {
+			/*
+			 * Στον έλεγχο αριστερά του || το swap επιλέγεται αν η νέα λύση είναι καλύτερη ακόμα και αν
+			 * το swap περιλαμβάνεται στην tabu list λόγω του aspiration criteria.
+			 * Στον έλεγχο δεξιά του || επιλέγουμε το swap μόνο αν η λύση είναι χειρότερη αλλά δεν
+			 * περιλαμβάνεται στην tabu list.
+			 */
+			if((swap.getCost() < currentSolutionCost) || (tabuList.getTabuValueForPair(swap.getNodeOnePosition(), swap.getNodeTwoPosition()) == 0)) {
+				currentSolutionCost = swap.getCost();
+				doSwap(swap);
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Αυξάνει το πλήθος των συνεχόμενων φορών που δεν έχει βρεθεί καλύτερη λύση ή τη θέτει ίση με 0 αν βρεθεί
+	 * μέσω της δοσμένης μεταβλητής consecutiveWorseSolutionsCount.
+	 * 
+	 * @param consecutiveWorseSolutionsCount το πλήθος των συνεχόμενων φορών που δεν έχει βρεθεί καλύτερη λύση
+	 */
+	private void updateConsecutiveWorseSolutionsCount(int consecutiveWorseSolutionsCount) {
+		if(currentSolutionCost < bestSolutionCost) {
+			bestSolution = currentSolution;
+			bestSolutionCost = currentSolutionCost;
+			consecutiveWorseSolutionsCount = 0;
+		} else {
+			consecutiveWorseSolutionsCount++;
+		}
+	}
+
+	private int getCurrentSwapCost(int vertexOnePosition, int vertexTwoPosition, List<Vertex> solution, int solutionCost) {
+		Vertex vertexOne = solution.get(vertexOnePosition);
+		Vertex vertexOnePrevious = vertexOnePosition == 0 ? null : solution.get(vertexOnePosition - 1);
+		Vertex vertexOneNext = solution.get(vertexOnePosition + 1);
+		
+		Vertex vertexTwo = solution.get(vertexTwoPosition);
+		Vertex vertexTwoPrevious = solution.get(vertexTwoPosition - 1);
+		Vertex nodeTwoNext = vertexTwoPosition == graphSize - 2 ? null : solution.get(vertexTwoPosition + 1);
+		
+		int vertexOnePrevCost = vertexOnePrevious == null ? 0 : getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne.getId());
+		int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
+		int vertexTwoPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexTwo.getId());
+		int vertexTwoNextCost = nodeTwoNext == null ? 0 : getEdgeCostFromVertexToVertex(vertexTwo, nodeTwoNext.getId());
+		int vertexesInitialCostContribution = vertexOnePrevCost + vertexOneNextCost + vertexTwoPrevCost + vertexTwoNextCost;
+		
+		int vertexOneSwapPrevCost = vertexOnePrevious == null ? 0: getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexTwo.getId());
+		int vertexOneSwapNextCost, vertexTwoSwapPrevCost = 0;
+		if(vertexTwoPosition - vertexOnePosition == 1) {
+			vertexOneSwapNextCost = vertexOneNextCost;
+			vertexTwoSwapPrevCost = vertexOneNextCost;
+		} else {
+			vertexOneSwapNextCost = getEdgeCostFromVertexToVertex(vertexTwo, vertexOneNext.getId());
+			vertexTwoSwapPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexOne.getId());
+		}
+		int vertexTwoSwapNextCost = nodeTwoNext == null ? 0: getEdgeCostFromVertexToVertex(vertexOne, nodeTwoNext.getId());
+		int vertexesNewCostContribution = vertexOneSwapPrevCost + vertexOneSwapNextCost + vertexTwoSwapPrevCost + vertexTwoSwapNextCost;
+		
+		return solutionCost - vertexesInitialCostContribution + vertexesNewCostContribution;
 	}
 	
 	/**
@@ -123,15 +163,15 @@ public class TabuSearch {
 	 * 		 	   προς εναλλαγή.
 	 */
 	private void doSwap(Swap swap) {
-		int nodeOnePosition = swap.getNodeOnePosition();
-		int nodeTwoPosition = swap.getNodeTwoPosition();
+		int vertexOnePosition = swap.getNodeOnePosition();
+		int vertexTwoPosition = swap.getNodeTwoPosition();
 		
-		Vertex temp = currentSolution.get(nodeOnePosition);
-		currentSolution.set(nodeOnePosition, currentSolution.get(nodeTwoPosition));
-		currentSolution.set(nodeTwoPosition, temp);
+		Vertex temp = currentSolution.get(vertexOnePosition);
+		currentSolution.set(vertexOnePosition, currentSolution.get(vertexTwoPosition));
+		currentSolution.set(vertexTwoPosition, temp);
 		
 		tabuList.updateTabuCounters();
-		tabuList.updateTenure(nodeOnePosition, nodeTwoPosition);
+		tabuList.updateTenure(vertexOnePosition, vertexTwoPosition);
 	}
 	
 	/**
@@ -142,7 +182,7 @@ public class TabuSearch {
 	 * @param requestedVertexId το id του κόμβου που θα καταλήγει η ακμή
 	 * @return το κόστος της ζητούμενης ακμής
 	 */
-	private int getEdgeCostFromNodeToNode(Vertex currentVertex, int requestedVertexId) {
+	private int getEdgeCostFromVertexToVertex(Vertex currentVertex, int requestedVertexId) {
 		return currentVertex.getEdgeList().stream().filter(edge -> requestedVertexId == edge.getId()).findFirst().get().getCost();
 	}
 }

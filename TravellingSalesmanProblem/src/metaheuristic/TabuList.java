@@ -46,10 +46,10 @@ public class TabuList {
 	/**
 	 * Θέτει την τιμή στην τομή των δύο κόμβων που έγιναν swap ίση με το tenure.
 	 * 
-	 * @param nodeOnePosition η θέση του πρώτου κόμβου στον πίνακα
-	 * @param nodeTwoPosition η θέση του δεύτερου κόμβου στον πίνακα
+	 * @param vertexOnePosition η θέση του πρώτου κόμβου στον πίνακα
+	 * @param vertexTwoPosition η θέση του δεύτερου κόμβου στον πίνακα
 	 */
-	public void updateTenure(int nodeOnePosition, int nodeTwoPosition) {
-		tabuList[nodeOnePosition][nodeTwoPosition] += tabuTenure;
+	public void updateTenure(int vertexOnePosition, int vertexTwoPosition) {
+		tabuList[vertexOnePosition][vertexTwoPosition] += tabuTenure;
 	}
 }

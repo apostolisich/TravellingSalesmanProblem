@@ -90,8 +90,16 @@ public class Solver {
 		return totalCost;
 	}
 
-	public static List<Vertex> applyTabuSearch(Graph graph, List<Vertex> initialSolution, int initialSolutionCost) {
-		TabuSearch tabuSearch = new TabuSearch(graph, initialSolution, initialSolutionCost);
+	/**
+	 * Εκτελεί την μέθοδο Tabu Search στη δοσμένη αρχική λύση και επιστρέφει μια βελτιωμένη λύση.
+	 * 
+	 * @param graphSize το πλήθος των κόμβων του γράφου
+	 * @param initialSolution μια αρχική λύση του προβλήματος
+	 * @param initialSolutionCost το κόστος της δοσμένης αρχικής λύσης
+	 * @return μια βελτιωμένη λύση
+	 */
+	public static List<Vertex> applyTabuSearch(int graphSize, List<Vertex> initialSolution, int initialSolutionCost) {
+		TabuSearch tabuSearch = new TabuSearch(graphSize, initialSolution, initialSolutionCost);
 		return tabuSearch.execute();
 	}
 }
