@@ -1,12 +1,14 @@
 import java.util.List;
 
+import utilities.Parser;
+import utilities.Solver;
 import xml.representation.classes.Graph;
 import xml.representation.classes.Vertex;
 
 public class Main {
 	
 	//Ένας αριθμός από το 0 μέχρι το 11 που αντιστοιχεί στον πίνακα με τα προβλήματα
-	private static final int PROBLEM_TO_BE_USED = 10;
+	private static final int PROBLEM_TO_BE_USED = 1;
 	
 	/*
 	 * Ένας πίνακας από μερικά benchmark problems της TSPLIB. Τον δημιούργησα για την εύκολη επιλογή μεταξύ διαφόρων
@@ -48,8 +50,14 @@ public class Main {
 		Parser.fillTspGraphFromFile(graph, BENCHMARK_PROBLEMS_FILE_ARRAY[PROBLEM_TO_BE_USED]);
 		
 		List<Vertex> initialSolution = Solver.nearestNeighborHeuristic(graph);
-		printGraph(graph);
-		calculateAndPrintSolutionInfo(initialSolution);
+//		printGraph(graph);
+		calculateAndPrintSolutionInfo(initialSolution, "Initial solution");
+		initialSolution.remove(graph.size() - 1);
+		
+		List<Vertex> improvedSolution = Solver.applyTabuSearch(graph, initialSolution, Solver.calculateTotalCost(initialSolution));
+		calculateAndPrintSolutionInfo(improvedSolution, "Improved solution");
+		
+		System.out.println("Optimal Solution: " + BENCHMARK_PROBLEMS_BEST_KNOWN_SOLUTIONS[PROBLEM_TO_BE_USED]);
 	}
 	
 	/**
@@ -66,15 +74,14 @@ public class Main {
 	 * @param graph
 	 * @param initialSolution
 	 */
-	private static void calculateAndPrintSolutionInfo(List<Vertex> solution) {
+	private static void calculateAndPrintSolutionInfo(List<Vertex> solution, String title) {
 		int initialSolutionCost = Solver.calculateTotalCost(solution);
 		
-		System.out.println("Initial Solution: " + initialSolutionCost);
+		System.out.println(title + ": " + initialSolutionCost);
 		for(Vertex vertex: solution) {
 			System.out.print(vertex.getId() + " ");
 		}
-		System.out.println();
-		System.out.print("Optimal Solution: " + BENCHMARK_PROBLEMS_BEST_KNOWN_SOLUTIONS[PROBLEM_TO_BE_USED]);
+		System.out.println("\n");
 	}
 
 }

@@ -1,7 +1,9 @@
+package utilities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import metaheuristic.TabuSearch;
 import xml.representation.classes.Edge;
 import xml.representation.classes.Graph;
 import xml.representation.classes.Vertex;
@@ -88,4 +90,8 @@ public class Solver {
 		return totalCost;
 	}
 
+	public static List<Vertex> applyTabuSearch(Graph graph, List<Vertex> initialSolution, int initialSolutionCost) {
+		TabuSearch tabuSearch = new TabuSearch(graph, initialSolution, initialSolutionCost);
+		return tabuSearch.execute();
+	}
 }

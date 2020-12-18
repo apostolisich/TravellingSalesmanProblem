@@ -1,4 +1,7 @@
-/Main.class
 /Parser.class
-/xml/
 /Solver.class
+/xml/
+/TabuSearch.class
+/Swap.class
+/utilities/
+/metaheuristic/
