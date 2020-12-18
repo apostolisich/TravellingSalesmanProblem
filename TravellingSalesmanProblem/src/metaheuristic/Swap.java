@@ -12,14 +12,29 @@ public class Swap implements Comparable<Swap> {
 		this.cost = cost;
 	}
 
+	/**
+	 * Επιστρέφει τη θέση του κόμβου ένα στη λίστα της τρέχουσας λύσης.
+	 * 
+	 * @return τη θέση του κόμβου ένα στη λίστα της τρέχουσας λύσης.
+	 */
 	public int getNodeOnePosition() {
 		return nodeOnePosition;
 	}
 
+	/**
+	 * Επιστρέφει τη θέση του κόμβου ένα στη λίστα της τρέχουσας λύσης.
+	 * 
+	 * @return τη θέση του κόμβου ένα στη λίστα της τρέχουσας λύσης.
+	 */
 	public int getNodeTwoPosition() {
 		return nodeTwoPosition;
 	}
 
+	/**
+	 * Επιστρέφει το κόστος της συγκριμένης αλλαγής.
+	 * 
+	 * @return το κόστος της συγκριμένης αλλαγής.
+	 */
 	public int getCost() {
 		return cost;
 	}

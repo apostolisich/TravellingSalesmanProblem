@@ -1,8 +1,7 @@
 package utilities;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+import heuristic.NearestNeighbor;
 import metaheuristic.TabuSearch;
 import xml.representation.classes.Edge;
 import xml.representation.classes.Graph;
@@ -13,61 +12,62 @@ public class Solver {
 	private Solver() { }
 	
 	/**
-	 * Uses the nearest neighbor heuristic to the given Graph and constructs an initial solution
-	 * for the TSP problem.
-	 * 
-	 * @param graph the graph of the current TSP problem.
-	 * @return a list of vertexes that represents the constructed solution
+	 * Εκτελεί το Nearest Neighbor Heuristic για να υπολογίσει μια αρχική λύση του προβλήματος TSP.
+	 * @param graph
+	 * @return
 	 */
-	public static List<Vertex> nearestNeighborHeuristic(Graph graph) {
-		//Η λίστα με τους κόμβους του γράφου
-		List<Vertex> graphVertexList = graph.getVertexList();
-		//Η λίστα των κόμβων που θα αποτελέσουν την αρχική λύση
-		List<Vertex> solution = new ArrayList<Vertex>();
-		
-		/*
-		 * Παρακάτω επιλέγω μέσω της κλάσης Random έναν τυχαίο ακέραιο μέσα από το πλήθος
-		 * των κόμβων και τον χρησιμοποιώ στη συνέχεια για να επιλέξω τον αντίστοιχο κόμβο.
-		 * Στη συνέχεια προσθέτω τον κόμβο στη λίστα με τους κόμβους της λύσης και θέτω
-		 * ότι τον έχουμε επισκεφθεί.
-		 */
-		int startingVertexId = new Random().nextInt(graph.size());
-		Vertex startingVertex = graphVertexList.get(startingVertexId);
-		solution.add(startingVertex);
-		startingVertex.setVisited(true);
-		
-		/*
-		 * Στον παρακάτω βρόγχο παίρνω κάθε φορά τον τελευταίο κόμβο που προστέθηκε στη λύση
-		 * και ελέγχω τις ακμές του, παίρνοντας κάθε φορά τον κόμβο στον οποίο οδηγούν. Αν δεν 
-		 * τον έχουμε επισκεφθεί, τον προσθέτω στη λύση και θέτω ότι τον έχουμε επισκεφθεί
-		 * για να μην χρησιμοποιηθεί ξανα. Αν τον έχουμε επισκεφθεί, προχωράω στην επόμενη
-		 * ακμή.
-		 */
-		for(int i = 0; i < graphVertexList.size() - 2; i++) {
-			Vertex currentVertex = solution.get(i);
-			for(Edge edge: currentVertex.getEdgeList()) {
-				Vertex neighborVertex = graphVertexList.get(edge.getId());
-				if(!neighborVertex.isVisited()) {
-					solution.add(neighborVertex);
-					neighborVertex.setVisited(true);
-					break;
-				}
-			}
-		}
-		//Εδώ προσθέτω ξανά στο τέλος της λύσης τον αρχικό κόμβο για να επιστρέψουμε σε αυτόν.
-		solution.add(startingVertex);
-		
-		return solution;
+	public static List<Vertex> applyNearestNeighbor(Graph graph) {
+		NearestNeighbor nearestNeighbor = new NearestNeighbor(graph);
+		return nearestNeighbor.execute();
 	}
 	
 	/**
-	 * Calculates the total cost by parsing the vertexes of the computed solution
-	 * and adding their costs.
+	 * Εκτελεί την μέθοδο Tabu Search στη δοσμένη αρχική λύση και επιστρέφει μια βελτιωμένη λύση
+	 * του προβλήματος TSP.
 	 * 
-	 * @param vertexes a list of the solution vertexes
-	 * @return the total cost of the given solution
+	 * @param graphSize το πλήθος των κόμβων του γράφου
+	 * @param initialSolution μια αρχική λύση του προβλήματος
+	 * @param initialSolutionCost το κόστος της δοσμένης αρχικής λύσης
+	 * @return μια βελτιωμένη λύση
 	 */
-	public static int calculateTotalCost(List<Vertex> vertexes) {
+	public static List<Vertex> applyTabuSearch(List<Vertex> initialSolution, int graphSize) {
+		TabuSearch tabuSearch = new TabuSearch(initialSolution, graphSize);
+		return tabuSearch.execute();
+	}
+	
+	/**
+	 * Βοηθητική μέθοδος η οποία εκτυπώνει τον γράφο.
+	 */
+	public static void printGraph(Graph graph) {
+		System.out.println("Graph");
+		System.out.println("---------");
+		System.out.print(graph.toString());
+	}
+	
+	/**
+	 * Βοηθητική μέθοδος η οποία υπολογίζει και εκτυπώνει τη δοσμένη λύση και το κόστος της.
+	 * 
+	 * @param solution η λύση προς εκτύπωση
+	 * @param title ο τίτλος της λύσης
+	 */
+	public static void calculateAndPrintSolutionInfo(List<Vertex> solution, String title) {
+		int initialSolutionCost = calculateTotalCost(solution);
+		
+		System.out.println(title + ": " + initialSolutionCost);
+		for(Vertex vertex: solution) {
+			System.out.print(vertex.getId() + " ");
+		}
+		System.out.println("\n");
+	}
+	
+	/**
+	 * Υπολογίζει το συνολικό κόστος της δοσμένης λύσης διαβάζοντας τους κόμβους της
+	 * και προσθέτοντας τα κόστη τους.
+	 * 
+	 * @param solution μια λίστα με τους κόμβους που αποτελούν τη λύση του προβλήματος.
+	 * @return το συνολικό κόστος της δοσμένης λύσης
+	 */
+	public static int calculateTotalCost(List<Vertex> solution) {
 		int totalCost = 0;
 		
 		/*
@@ -76,9 +76,9 @@ public class Solver {
 		 * λίστα με τις ακμές του και προσθέτει στο συνολικό κόστος το κόστος της ακμής
 		 * που οδηγεί στον επόμενο κόμβο της λύσης.
 		 */
-		for(int i = 0; i < vertexes.size() - 2; i++) {
-			Vertex currentVertex = vertexes.get(i);
-			Vertex nextVertex = vertexes.get(i + 1);
+		for(int i = 0; i < solution.size() - 2; i++) {
+			Vertex currentVertex = solution.get(i);
+			Vertex nextVertex = solution.get(i + 1);
 			for(Edge edge: currentVertex.getEdgeList()) {
 				if(nextVertex.getId() == edge.getId()) {
 					totalCost += edge.getCost();
@@ -90,16 +90,4 @@ public class Solver {
 		return totalCost;
 	}
 
-	/**
-	 * Εκτελεί την μέθοδο Tabu Search στη δοσμένη αρχική λύση και επιστρέφει μια βελτιωμένη λύση.
-	 * 
-	 * @param graphSize το πλήθος των κόμβων του γράφου
-	 * @param initialSolution μια αρχική λύση του προβλήματος
-	 * @param initialSolutionCost το κόστος της δοσμένης αρχικής λύσης
-	 * @return μια βελτιωμένη λύση
-	 */
-	public static List<Vertex> applyTabuSearch(int graphSize, List<Vertex> initialSolution, int initialSolutionCost) {
-		TabuSearch tabuSearch = new TabuSearch(graphSize, initialSolution, initialSolutionCost);
-		return tabuSearch.execute();
-	}
 }

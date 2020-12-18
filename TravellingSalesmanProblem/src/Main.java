@@ -49,39 +49,14 @@ public class Main {
 		Graph graph = new Graph();
 		Parser.fillTspGraphFromFile(graph, BENCHMARK_PROBLEMS_FILE_ARRAY[PROBLEM_TO_BE_USED]);
 		
-		List<Vertex> initialSolution = Solver.nearestNeighborHeuristic(graph);
+		List<Vertex> initialSolution = Solver.applyNearestNeighbor(graph);
 //		printGraph(graph);
-		calculateAndPrintSolutionInfo(initialSolution, "Initial solution");
-		initialSolution.remove(graph.size() - 1);
+		Solver.calculateAndPrintSolutionInfo(initialSolution, "Initial solution");
 		
-		List<Vertex> improvedSolution = Solver.applyTabuSearch(graph.size(), initialSolution, Solver.calculateTotalCost(initialSolution));
-		calculateAndPrintSolutionInfo(improvedSolution, "Improved solution");
+		List<Vertex> improvedSolution = Solver.applyTabuSearch(initialSolution, graph.size());
+		Solver.calculateAndPrintSolutionInfo(improvedSolution, "Improved solution");
 		
 		System.out.println("Optimal Solution: " + BENCHMARK_PROBLEMS_BEST_KNOWN_SOLUTIONS[PROBLEM_TO_BE_USED]);
-	}
-	
-	/**
-	 * Helper method that prints the given Graph.
-	 */
-	private static void printGraph(Graph graph) {
-		System.out.println("Graph");
-		System.out.println("---------");
-		System.out.print(graph.toString());
-	}
-	
-	/**
-	 * Helper method that calculates the cost of the 
-	 * @param graph
-	 * @param initialSolution
-	 */
-	private static void calculateAndPrintSolutionInfo(List<Vertex> solution, String title) {
-		int initialSolutionCost = Solver.calculateTotalCost(solution);
-		
-		System.out.println(title + ": " + initialSolutionCost);
-		for(Vertex vertex: solution) {
-			System.out.print(vertex.getId() + " ");
-		}
-		System.out.println("\n");
 	}
 
 }

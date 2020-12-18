@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import utilities.Solver;
 import xml.representation.classes.Vertex;
 
 public class TabuSearch {
@@ -15,10 +16,11 @@ public class TabuSearch {
 	private int iterationCount;
 	private TabuList tabuList;
 	
-	public TabuSearch(int graphSize, List<Vertex> initialSolution, int initialSolutionCost) {
+	public TabuSearch(List<Vertex> initialSolution, int graphSize) {
 		this.graphSize = graphSize;
+		initialSolution.remove(graphSize - 1);
 		this.bestSolution = initialSolution;
-		this.bestSolutionCost = initialSolutionCost;
+		this.bestSolutionCost = Solver.calculateTotalCost(initialSolution);
 	}
 	
 	/**
