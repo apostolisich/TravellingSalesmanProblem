@@ -40,7 +40,7 @@ public class Graph {
     }
     
     /**
-     * Κάνει override τη μέθοδο toString() για να επιστρέψει έναν συγκεκριμένο τρόπο
+     * Κάνει override τη μέθοδο toString() και ορίζει έναν συγκεκριμένο τρόπο
      * εκτύπωσης για τα περιεχόμενα του γράφου.
      */
     @Override
@@ -48,8 +48,10 @@ public class Graph {
     	StringBuilder builder = new StringBuilder();
     	for(int vertexIndex = 0; vertexIndex < vertexList.size(); vertexIndex++) {
     		builder.append("Vertex " + vertexIndex + "\n");
+    		
     		Vertex currentVertex = vertexList.get(vertexIndex);
     		List<Edge> edges = currentVertex.getEdgeList();
+    		
     		builder.append("Edges:");
     		for(int edgeIndex = 0; edgeIndex < edges.size(); edgeIndex++) {
     			Edge currentEdge = edges.get(edgeIndex);
