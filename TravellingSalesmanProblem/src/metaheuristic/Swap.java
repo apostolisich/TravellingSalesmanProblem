@@ -2,14 +2,14 @@ package metaheuristic;
 
 public class Swap implements Comparable<Swap> {
 	
-	private int nodeOnePosition;
-	private int nodeTwoPosition;
-	private int cost;
+	private int vertexOnePosition;
+	private int vertexTwoPosition;
+	private int newSolutionCost;
 	
-	public Swap(int nodeOnePosition, int nodeTwoPosition, int cost) {
-		this.nodeOnePosition = nodeOnePosition;
-		this.nodeTwoPosition = nodeTwoPosition;
-		this.cost = cost;
+	public Swap(int vertexOnePosition, int vertexTwoPosition, int cost) {
+		this.vertexOnePosition = vertexOnePosition;
+		this.vertexTwoPosition = vertexTwoPosition;
+		this.newSolutionCost = cost;
 	}
 
 	/**
@@ -17,8 +17,8 @@ public class Swap implements Comparable<Swap> {
 	 * 
 	 * @return τη θέση του κόμβου ένα στη λίστα της τρέχουσας λύσης.
 	 */
-	public int getNodeOnePosition() {
-		return nodeOnePosition;
+	public int getVertexOnePosition() {
+		return vertexOnePosition;
 	}
 
 	/**
@@ -26,24 +26,28 @@ public class Swap implements Comparable<Swap> {
 	 * 
 	 * @return τη θέση του κόμβου ένα στη λίστα της τρέχουσας λύσης.
 	 */
-	public int getNodeTwoPosition() {
-		return nodeTwoPosition;
+	public int getVertexTwoPosition() {
+		return vertexTwoPosition;
 	}
 
 	/**
-	 * Επιστρέφει το κόστος της συγκριμένης αλλαγής.
+	 * Επιστρέφει το νέο κόστος της λύσης μετά τη συγκριμένη αλλαγή.
 	 * 
-	 * @return το κόστος της συγκριμένης αλλαγής.
+	 * @return το νέο κόστος της λύσης μετά τη συγκριμένη αλλαγή.
 	 */
-	public int getCost() {
-		return cost;
+	public int getNewSolutionCost() {
+		return newSolutionCost;
 	}
 
 	@Override
 	public int compareTo(Swap other) {
-		if(this.cost < other.getCost()) {
+		/*
+		 * Η μέθοδος αυτή χρησιμοποιείται για τη σύγκριση 2 αντικειμένων swap, του τρέχοντος
+		 * και ενός άλλου. 
+		 */
+		if(this.newSolutionCost < other.getNewSolutionCost()) {
 			return -1;
-		} else if(this.cost > other.getCost()) {
+		} else if(this.newSolutionCost > other.getNewSolutionCost()) {
 			return +1;
 		}
 		return 0;

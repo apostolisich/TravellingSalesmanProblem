@@ -19,7 +19,7 @@ public class TabuSearch {
 	public TabuSearch(List<Vertex> initialSolution, int graphSize) {
 		this.graphSize = graphSize;
 		/* Εδώ αφαιρώ τον τελευταίο κόμβο ο οποίος είναι ίδιος με τον πρώτο και είχε προστεθεί για
-		 * τον υπολογισμό του κόστους και εκτύπωσητης λύσης */
+		 * τον υπολογισμό του κόστους της αρχικής λύσης και εκτύπωση της */
 		initialSolution.remove(graphSize - 1);
 		this.bestSolution = initialSolution;
 		this.bestSolutionCost = Solver.calculateTotalCost(initialSolution);
@@ -77,8 +77,8 @@ public class TabuSearch {
 		
 		for(int i = 0; i < graphSize - 2; i++) {
 			for(int j = i + 1; j < graphSize - 1; j++) {
-				int currentSwapCost = getCurrentSwapCost(i, j, currentSolution, currentSolutionCost);
-				Swap currentSwap = new Swap(i, j, currentSwapCost);
+				int newSolutionCost = getSolutionCostAfterSwap(i, j, currentSolution, currentSolutionCost);
+				Swap currentSwap = new Swap(i, j, newSolutionCost);
 				currentSwapNeighborhoud.add(currentSwap);
 			}
 		}
@@ -103,56 +103,46 @@ public class TabuSearch {
 			 * Στον έλεγχο δεξιά του || επιλέγουμε το swap μόνο αν η λύση είναι χειρότερη αλλά δεν
 			 * περιλαμβάνεται στην tabu list.
 			 */
-			if((swap.getCost() < currentSolutionCost) || (tabuList.getTabuValueForPair(swap.getNodeOnePosition(), swap.getNodeTwoPosition()) == 0)) {
-				currentSolutionCost = swap.getCost();
+			int newSolutionCost = swap.getNewSolutionCost();
+			if((newSolutionCost < currentSolutionCost) 
+					|| (tabuList.getTabuValueForPair(swap.getVertexOnePosition(), swap.getVertexTwoPosition()) == 0)) {
+				currentSolutionCost = newSolutionCost;
 				doSwap(swap);
 				break;
 			}
 		}
 	}
-	
-	/**
-	 * Αυξάνει το πλήθος των συνεχόμενων φορών που δεν έχει βρεθεί καλύτερη λύση ή τη θέτει ίση με 0 αν βρεθεί
-	 * μέσω της δοσμένης μεταβλητής consecutiveWorseSolutionsCount.
-	 * 
-	 * @param consecutiveWorseSolutionsCount το πλήθος των συνεχόμενων φορών που δεν έχει βρεθεί καλύτερη λύση
-	 */
-	private void updateConsecutiveWorseSolutionsCount(int consecutiveWorseSolutionsCount) {
-		if(currentSolutionCost < bestSolutionCost) {
-			bestSolution = currentSolution;
-			bestSolutionCost = currentSolutionCost;
-			consecutiveWorseSolutionsCount = 0;
-		} else {
-			consecutiveWorseSolutionsCount++;
-		}
-	}
 
 	/**
-	 * Υπολογίζει και επιστρέφει το κόστος της τρέχουσας αλλαγής.
+	 * Υπολογίζει και επιστρέφει το νέο κόστος της λύσης μετά την τρέχουσα αλλαγή.
 	 * 
 	 * @param vertexOnePosition η θέση του πρώτου κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
 	 * @param vertexTwoPosition η θέση του δεύτερο κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
 	 * @param solution η λίστα των κόμβων της τρέχουσας λύσης 
 	 * @param solutionCost το κόστης της τρέχουσας λύσης
-	 * @return το νέο κόστος της λύσης με την τρέχουσα ανταλλαγή
+	 * @return το νέο κόστος της λύσης μετά την τρέχουσα ανταλλαγή
 	 */
-	private int getCurrentSwapCost(int vertexOnePosition, int vertexTwoPosition, List<Vertex> solution, int solutionCost) {
+	private int getSolutionCostAfterSwap(int vertexOnePosition, int vertexTwoPosition, List<Vertex> solution, int solutionCost) {
 		Vertex vertexOne = solution.get(vertexOnePosition);
+		/* Έχω τον έλεγχο με το 0 για την περίπτωση που ο vertexOne είναι ο πρώτος κόμβος της λύσης,
+		 * επομένως δεν θα έχει προηγούμενο. */
 		Vertex vertexOnePrevious = vertexOnePosition == 0 ? null : solution.get(vertexOnePosition - 1);
 		Vertex vertexOneNext = solution.get(vertexOnePosition + 1);
 		
 		Vertex vertexTwo = solution.get(vertexTwoPosition);
 		Vertex vertexTwoPrevious = solution.get(vertexTwoPosition - 1);
+		/* Έχω τον έλεγχο με το graphSize - 2 για την περίπτωση που ο vertexTwo είναι ο τελευταίος κόμβος της λύσης,
+		 * επομένως δεν θα έχει επόμενο. */
 		Vertex vertexTwoNext = vertexTwoPosition == graphSize - 2 ? null : solution.get(vertexTwoPosition + 1);
 		
 		int vertexesInitialCostContribution = calculateVertexesInitialCostContribution(vertexOnePrevious, vertexOne, vertexOneNext,
 																					   vertexTwoPrevious, vertexTwo, vertexTwoNext);
 		
-		int vertexexNewCostContribution = calculateVertexesNewCostContribution(vertexOnePrevious, vertexOne, vertexOneNext,
+		int vertexesNewCostContribution = calculateVertexesNewCostContribution(vertexOnePrevious, vertexOne, vertexOneNext,
 																			   vertexTwoPrevious, vertexTwo, vertexTwoNext,
 																			   vertexOnePosition, vertexTwoPosition);
 		
-		return solutionCost - vertexesInitialCostContribution + vertexexNewCostContribution;
+		return solutionCost - vertexesInitialCostContribution + vertexesNewCostContribution;
 	}
 	
 	/**
@@ -169,10 +159,14 @@ public class TabuSearch {
 	 */
 	private int calculateVertexesInitialCostContribution(Vertex vertexOnePrevious, Vertex vertexOne, Vertex vertexOneNext,
 														 Vertex vertexTwoPrevious, Vertex vertexTwo, Vertex vertexTwoNext) {
-		int vertexOnePrevCost = vertexOnePrevious == null ? 0 : getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne.getId());
+		/*
+		 * Οι γραμμές παρακάτω υπολογίζουν το κόστος μεταξύ του προηγούμενου και του επόμενου κόμβου για κάθε
+		 * έναν από τους δύο κόμβους προς αλλαγή.
+		 */
+		int vertexOnePrevCost = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne.getId());
 		int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
 		int vertexTwoPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexTwo.getId());
-		int vertexTwoNextCost = vertexTwoNext == null ? 0 : getEdgeCostFromVertexToVertex(vertexTwo, vertexTwoNext.getId());
+		int vertexTwoNextCost = getEdgeCostFromVertexToVertex(vertexTwo, vertexTwoNext.getId());
 		
 		return vertexOnePrevCost + vertexOneNextCost + vertexTwoPrevCost + vertexTwoNextCost;
 	}
@@ -194,40 +188,28 @@ public class TabuSearch {
 	private int calculateVertexesNewCostContribution(Vertex vertexOnePrevious, Vertex vertexOne, Vertex vertexOneNext,
 			 										 Vertex vertexTwoPrevious, Vertex vertexTwo, Vertex vertexTwoNext,
 			 										 int vertexOnePosition, int vertexTwoPosition) {
-		int vertexOneSwapPrevCost = vertexOnePrevious == null ? 0: getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexTwo.getId());
-		int vertexOneSwapNextCost = 0;
-		int vertexTwoSwapPrevCost = 0;
+		/*
+		 * Υπολογίζεται το κόστος μεταξύ του προηγούμενου και του επόμενου κόμβου για κάθε έναν από τους δύο
+		 * κόμβους μετά την αλλαγή. Η αλλαγή εδώ δεν πραγματοποείται, αλλά υπολόγιζεται το κόστος με βάση
+		 * τη διάταξη των κόμβων αν τελικά πραγματοποιούνταν.
+		 */
+		int vertexOnePrevCostAfterSwap = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexTwo.getId());
+		
+		int vertexOneNextCostAfterSwap = 0;
+		int vertexTwoPrevCostAfterSwap = 0;
+		//Ο παρακάτω έλεγχος υπάρχει για να χειριζόμαστε τις περιπτώσεις που οι κόμβοι είναι ο ένας δίπλα στον άλλο.
 		if(vertexTwoPosition - vertexOnePosition == 1) {
 			int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
-			vertexOneSwapNextCost = vertexOneNextCost;
-			vertexTwoSwapPrevCost = vertexOneNextCost;
+			vertexOneNextCostAfterSwap = vertexOneNextCost;
+			vertexTwoPrevCostAfterSwap = vertexOneNextCost;
 		} else {
-			vertexOneSwapNextCost = getEdgeCostFromVertexToVertex(vertexTwo, vertexOneNext.getId());
-			vertexTwoSwapPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexOne.getId());
+			vertexOneNextCostAfterSwap = getEdgeCostFromVertexToVertex(vertexTwo, vertexOneNext.getId());
+			vertexTwoPrevCostAfterSwap = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexOne.getId());
 		}
-		int vertexTwoSwapNextCost = vertexTwoNext == null ? 0: getEdgeCostFromVertexToVertex(vertexOne, vertexTwoNext.getId());
 		
-		return vertexOneSwapPrevCost + vertexOneSwapNextCost + vertexTwoSwapPrevCost + vertexTwoSwapNextCost;
-	}
-	
-	/**
-	 * Ανταλλάσει τους δύο κόμβους παίρνωντας τη θέση τους στη λίστα της λύσης από το αντικείμενο τύπου
-	 * Swap. Επίσης μειώνει τους μετρητές των ζευγαριών και αρχικοποιεί τον μετρητή του τρέχοντος ζευγαριού
-	 * στην tabu list
-	 * 
-	 * @param swap ένα αντικείμενο τύπου Swap το οποίο περιλαμβάνει τους δύο κόμβους 
-	 * 		 	   προς εναλλαγή.
-	 */
-	private void doSwap(Swap swap) {
-		int vertexOnePosition = swap.getNodeOnePosition();
-		int vertexTwoPosition = swap.getNodeTwoPosition();
+		int vertexTwoNextCostAfterSwap = getEdgeCostFromVertexToVertex(vertexOne, vertexTwoNext.getId());
 		
-		Vertex temp = currentSolution.get(vertexOnePosition);
-		currentSolution.set(vertexOnePosition, currentSolution.get(vertexTwoPosition));
-		currentSolution.set(vertexTwoPosition, temp);
-		
-		tabuList.updateTabuCounters();
-		tabuList.updateTenure(vertexOnePosition, vertexTwoPosition);
+		return vertexOnePrevCostAfterSwap + vertexOneNextCostAfterSwap + vertexTwoPrevCostAfterSwap + vertexTwoNextCostAfterSwap;
 	}
 	
 	/**
@@ -239,6 +221,61 @@ public class TabuSearch {
 	 * @return το κόστος της ζητούμενης ακμής
 	 */
 	private int getEdgeCostFromVertexToVertex(Vertex currentVertex, int requestedVertexId) {
+		if(currentVertex == null) {
+			return 0;
+		}
+		
 		return currentVertex.getEdgeList().stream().filter(edge -> requestedVertexId == edge.getId()).findFirst().get().getCost();
+	}
+	
+	/**
+	 * Ανταλλάσει τους δύο κόμβους παίρνοντας τη θέση τους στη λίστα της λύσης από το αντικείμενο τύπου
+	 * Swap. Επίσης μειώνει τους μετρητές των ζευγαριών και αρχικοποιεί τον μετρητή του τρέχοντος ζευγαριού
+	 * στην tabu list
+	 * 
+	 * @param swap ένα αντικείμενο τύπου Swap το οποίο περιλαμβάνει τους δύο κόμβους 
+	 * 		 	   προς εναλλαγή.
+	 */
+	private void doSwap(Swap swap) {
+		int vertexOnePosition = swap.getVertexOnePosition();
+		int vertexTwoPosition = swap.getVertexTwoPosition();
+		
+		Vertex vertexOne = currentSolution.get(vertexOnePosition);
+		Vertex vertexTwo = currentSolution.get(vertexTwoPosition);
+		currentSolution.set(vertexOnePosition, vertexTwo);
+		currentSolution.set(vertexTwoPosition, vertexOne);
+		
+		tabuList.updateTabuCounters();
+		tabuList.updateTenure(vertexOnePosition, vertexTwoPosition);
+	}
+	
+	/**
+	 * Αυξάνει το πλήθος των συνεχόμενων φορών που δεν έχει βρεθεί καλύτερη λύση ή τη θέτει ίση με 0 αν βρεθεί
+	 * μέσω της δοσμένης μεταβλητής consecutiveWorseSolutionsCount.
+	 * 
+	 * @param consecutiveWorseSolutionsCount το πλήθος των συνεχόμενων φορών που δεν έχει βρεθεί καλύτερη λύση
+	 */
+	private void updateConsecutiveWorseSolutionsCount(int consecutiveWorseSolutionsCount) {
+		if(isCurrentSolutionBetter()) {
+			consecutiveWorseSolutionsCount = 0;
+		} else {
+			consecutiveWorseSolutionsCount++;
+		}
+	}
+	
+	/**
+	 * Ελέγχει αν η τρέχουσα λύση είναι καλύτερη από την μέχρι στιγμής καλύτερη και αν είναι ορίζει την
+	 * τρέχουσα ως βέλτιστη και επιστρέφει true. Αν δεν είναι καλύτερη, επιστρέφει false.
+	 * 
+	 * @return true αν η τρέχουσα λύση είναι καλύτερη από τη βέλτιστη και false διαφορετικά.
+	 */
+	private boolean isCurrentSolutionBetter() {
+		if(currentSolutionCost < bestSolutionCost) {
+			bestSolution = currentSolution;
+			bestSolutionCost = currentSolutionCost;
+			return true;
+		}
+		
+		return false;
 	}
 }

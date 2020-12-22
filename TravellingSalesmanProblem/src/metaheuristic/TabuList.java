@@ -9,8 +9,7 @@ public class TabuList {
 	public TabuList(int size) {
 		this.size = size;
 		/*
-		 * Εδώ θέτω το tenure ίσο με τη ρίζα του μεγέθους του προβλήματος σύμφωνα 
-		 * με ένα άρθρο που διάβασα.
+		 * Εδώ θέτω το tenure ίσο με τη ρίζα του μεγέθους του προβλήματος.
 		 */
 		this.tabuTenure = Math.round(Math.sqrt((double) size));
 		this.tabuList = new int[size][size];
