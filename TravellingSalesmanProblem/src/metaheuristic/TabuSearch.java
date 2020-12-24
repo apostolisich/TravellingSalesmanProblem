@@ -163,10 +163,10 @@ public class TabuSearch {
 		 * Οι γραμμές παρακάτω υπολογίζουν το κόστος μεταξύ του προηγούμενου και του επόμενου κόμβου για κάθε
 		 * έναν από τους δύο κόμβους προς αλλαγή.
 		 */
-		int vertexOnePrevCost = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne.getId());
-		int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
-		int vertexTwoPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexTwo.getId());
-		int vertexTwoNextCost = getEdgeCostFromVertexToVertex(vertexTwo, vertexTwoNext.getId());
+		int vertexOnePrevCost = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne);
+		int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext);
+		int vertexTwoPrevCost = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexTwo);
+		int vertexTwoNextCost = getEdgeCostFromVertexToVertex(vertexTwo, vertexTwoNext);
 		
 		return vertexOnePrevCost + vertexOneNextCost + vertexTwoPrevCost + vertexTwoNextCost;
 	}
@@ -193,21 +193,21 @@ public class TabuSearch {
 		 * κόμβους μετά την αλλαγή. Η αλλαγή εδώ δεν πραγματοποείται, αλλά υπολόγιζεται το κόστος με βάση
 		 * τη διάταξη των κόμβων αν τελικά πραγματοποιούνταν.
 		 */
-		int vertexOnePrevCostAfterSwap = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexTwo.getId());
+		int vertexOnePrevCostAfterSwap = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexTwo);
 		
 		int vertexOneNextCostAfterSwap = 0;
 		int vertexTwoPrevCostAfterSwap = 0;
 		//Ο παρακάτω έλεγχος υπάρχει για να χειριζόμαστε τις περιπτώσεις που οι κόμβοι είναι ο ένας δίπλα στον άλλο.
 		if(vertexTwoPosition - vertexOnePosition == 1) {
-			int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext.getId());
+			int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext);
 			vertexOneNextCostAfterSwap = vertexOneNextCost;
 			vertexTwoPrevCostAfterSwap = vertexOneNextCost;
 		} else {
-			vertexOneNextCostAfterSwap = getEdgeCostFromVertexToVertex(vertexTwo, vertexOneNext.getId());
-			vertexTwoPrevCostAfterSwap = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexOne.getId());
+			vertexOneNextCostAfterSwap = getEdgeCostFromVertexToVertex(vertexTwo, vertexOneNext);
+			vertexTwoPrevCostAfterSwap = getEdgeCostFromVertexToVertex(vertexTwoPrevious, vertexOne);
 		}
 		
-		int vertexTwoNextCostAfterSwap = getEdgeCostFromVertexToVertex(vertexOne, vertexTwoNext.getId());
+		int vertexTwoNextCostAfterSwap = getEdgeCostFromVertexToVertex(vertexOne, vertexTwoNext);
 		
 		return vertexOnePrevCostAfterSwap + vertexOneNextCostAfterSwap + vertexTwoPrevCostAfterSwap + vertexTwoNextCostAfterSwap;
 	}
@@ -217,15 +217,15 @@ public class TabuSearch {
 	 * στον κόμβο με id ίσο με το δοσμένο id (requestedVertexId).
 	 * 
 	 * @param currentVertex ο τρέχων κόμβος από τον οποίο ξεκινάει η ακμή
-	 * @param requestedVertexId το id του κόμβου που θα καταλήγει η ακμή
+	 * @param requestedVertex ο κόμβος στον οποίο θα καταλήξει η ακμή
 	 * @return το κόστος της ζητούμενης ακμής
 	 */
-	private int getEdgeCostFromVertexToVertex(Vertex currentVertex, int requestedVertexId) {
-		if(currentVertex == null) {
+	private int getEdgeCostFromVertexToVertex(Vertex currentVertex, Vertex requestedVertex) {
+		if(currentVertex == null || requestedVertex == null) {
 			return 0;
 		}
 		
-		return currentVertex.getEdgeList().stream().filter(edge -> requestedVertexId == edge.getId()).findFirst().get().getCost();
+		return currentVertex.getEdgeList().stream().filter(edge -> requestedVertex.getId() == edge.getId()).findFirst().get().getCost();
 	}
 	
 	/**
