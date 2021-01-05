@@ -117,7 +117,7 @@ public class TabuSearch {
 	 * Υπολογίζει και επιστρέφει το νέο κόστος της λύσης μετά την τρέχουσα αλλαγή.
 	 * 
 	 * @param vertexOnePosition η θέση του πρώτου κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
-	 * @param vertexTwoPosition η θέση του δεύτερο κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
+	 * @param vertexTwoPosition η θέση του δεύτερου κόμβου στη λίστα των κόμβων της τρέχουσας λύσης
 	 * @param solution η λίστα των κόμβων της τρέχουσας λύσης 
 	 * @param solutionCost το κόστης της τρέχουσας λύσης
 	 * @return το νέο κόστος της λύσης μετά την τρέχουσα ανταλλαγή
@@ -161,7 +161,8 @@ public class TabuSearch {
 														 Vertex vertexTwoPrevious, Vertex vertexTwo, Vertex vertexTwoNext) {
 		/*
 		 * Οι γραμμές παρακάτω υπολογίζουν το κόστος μεταξύ του προηγούμενου και του επόμενου κόμβου για κάθε
-		 * έναν από τους δύο κόμβους προς αλλαγή.
+		 * έναν από τους δύο κόμβους προς αλλαγή. Η αλλαγή εδώ δεν πραγματοποείται, αλλά υπολόγιζεται το κόστος με βάση
+		 * τη διάταξη των κόμβων αν τελικά πραγματοποιούνταν.
 		 */
 		int vertexOnePrevCost = getEdgeCostFromVertexToVertex(vertexOnePrevious, vertexOne);
 		int vertexOneNextCost = getEdgeCostFromVertexToVertex(vertexOne, vertexOneNext);

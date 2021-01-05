@@ -13,8 +13,9 @@ public class Solver {
 	
 	/**
 	 * Εκτελεί το Nearest Neighbor Heuristic για να υπολογίσει μια αρχική λύση του προβλήματος TSP.
-	 * @param graph
-	 * @return
+	 * 
+	 * @param graph ο γράφος που περιέχει τους κόμβους του προβλήματος
+	 * @return μια αρχική λύση
 	 */
 	public static List<Vertex> applyNearestNeighbor(Graph graph) {
 		NearestNeighbor nearestNeighbor = new NearestNeighbor(graph);
@@ -45,7 +46,8 @@ public class Solver {
 	}
 	
 	/**
-	 * Βοηθητική μέθοδος η οποία υπολογίζει και εκτυπώνει τη δοσμένη λύση και το κόστος της.
+	 * Βοηθητική μέθοδος η οποία υπολογίζει το κόστος της δοσμένης λύσης και την εκτυπώνει
+	 * μαζί με αυτό.
 	 * 
 	 * @param solution η λύση προς εκτύπωση
 	 * @param title ο τίτλος της λύσης
